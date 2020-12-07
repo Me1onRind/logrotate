@@ -22,10 +22,10 @@ func WithCurLogLinkname(linkpath string) Option {
 
 // Judege expired by laste modify time
 // cutoffTime = now - maxAge
-// only delete satisfying regular expression filename
-func WithDeleteExpiredFile(maxAge time.Duration, filenamePattern string) Option {
+// Only delete satisfying file wildcard filename
+func WithDeleteExpiredFile(maxAge time.Duration, fileWilcard string) Option {
 	return func(r *RotateLog) {
 		r.maxAge = maxAge
-		r.deletePathParttern = fmt.Sprintf("%s%s%s", filepath.Dir(r.logPath), string([]byte{filepath.Separator}), filenamePattern)
+		r.deleteFileWildcard = fmt.Sprintf("%s%s%s", filepath.Dir(r.logPath), string([]byte{filepath.Separator}), fileWilcard)
 	}
 }

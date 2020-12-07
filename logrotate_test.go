@@ -15,6 +15,7 @@ func Test_SimpleWrite(t *testing.T) {
 	t.Run("no rotate", func(t *testing.T) {
 		rl, err := NewRoteteLog("./testdata/test.log.2006010215", WithCurLogLinkname("./testdata/test.log"))
 		if assert.Empty(t, err) {
+			defer rl.Close()
 			rl.Write([]byte("hello, world!"))
 			compareFileContent(t, rl.getLatestLogPath(time.Now()), "hello, world!")
 			compareFileContent(t, "./testdata/test.log", "hello, world!")
@@ -25,6 +26,7 @@ func Test_SimpleWrite(t *testing.T) {
 	t.Run("no rotate and link", func(t *testing.T) {
 		rl, err := NewRoteteLog("./testdata/test.log")
 		if assert.Empty(t, err) {
+			defer rl.Close()
 			rl.Write([]byte("hello, world!"))
 			content, err := ioutil.ReadFile(rl.getLatestLogPath(time.Now()))
 			if assert.Empty(t, err) {
@@ -39,6 +41,7 @@ func Test_SimpleWrite(t *testing.T) {
 func Test_Rotate(t *testing.T) {
 	rl, err := NewRoteteLog("./testdata/test.log.2006010215", WithRotateTime(time.Hour), WithCurLogLinkname("./testdata/test.log"))
 	if assert.Empty(t, err) {
+		defer rl.Close()
 		rotate := make(chan time.Time, 1)
 		rl.rotate = rotate
 
@@ -60,6 +63,7 @@ func Test_DeleteExpiredFile(t *testing.T) {
 	rl, err := NewRoteteLog("./testdata/test.log.2006010215", WithRotateTime(time.Hour), WithCurLogLinkname("./testdata/test.log"),
 		WithDeleteExpiredFile(time.Second, "test.log*"))
 	if assert.Empty(t, err) {
+		defer rl.Close()
 		for i := 0; i < 10; i++ {
 			os.OpenFile(fmt.Sprintf("./testdata/test.log.%d", i), os.O_CREATE, 0644)
 		}

@@ -15,7 +15,7 @@ type RotateLog struct {
 	curLogLinkpath     string
 	rotateTime         time.Duration
 	maxAge             time.Duration
-	deletePathParttern string
+	deleteFileWildcard string
 
 	mutex  *sync.Mutex
 	rotate <-chan time.Time // notify rotate event
@@ -64,7 +64,7 @@ func (r *RotateLog) handleEvent() {
 	for {
 		select {
 		case <-r.close:
-			break
+			return
 		case now := <-r.rotate:
 			r.rotateFile(now)
 		}
@@ -94,7 +94,7 @@ func (r *RotateLog) rotateFile(now time.Time) error {
 		os.Link(latestLogPath, r.curLogLinkpath)
 	}
 
-	if r.maxAge > 0 && len(r.deletePathParttern) > 0 { // at present
+	if r.maxAge > 0 && len(r.deleteFileWildcard) > 0 { // at present
 		go r.deleteExpiredFile(now)
 	}
 
@@ -104,7 +104,7 @@ func (r *RotateLog) rotateFile(now time.Time) error {
 // Judege expired by laste modify time
 func (r *RotateLog) deleteExpiredFile(now time.Time) {
 	cutoffTime := now.Add(-r.maxAge)
-	matches, err := filepath.Glob(r.deletePathParttern)
+	matches, err := filepath.Glob(r.deleteFileWildcard)
 	if err != nil {
 		return
 	}
